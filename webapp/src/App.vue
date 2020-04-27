@@ -62,9 +62,15 @@
       </template>
     </v-app-bar>
 
-
-
     <v-content>
+      <v-progress-linear
+              :active="$store.state.working"
+              :indeterminate="$store.state.working"
+              absolute
+              top
+              color="red"
+              style="z-index: 3"
+      ></v-progress-linear>
       <router-view/>
     </v-content>
     <v-footer
@@ -171,6 +177,10 @@ export default {
       'domains-crud': {
         'name': 'domains-crud',
         'text': 'Domain Management (CRUD)',
+      },
+      'tokens': {
+        'name': 'tokens',
+        'text': 'Token Management',
       },
     },
   }),

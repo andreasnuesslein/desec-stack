@@ -1,10 +1,12 @@
 <template>
   <v-text-field
     :label="label"
+    :disabled="readonly"
     :value="value"
     :type="type || ''"
     placeholder="(optional)"
     @input="input($event)"
+    @keyup="keyup($event)"
   />
 </template>
 
@@ -14,6 +16,10 @@ export default {
   props: {
     label: {
       type: String,
+      required: false,
+    },
+    readonly: {
+      type: Boolean,
       required: false,
     },
     value: {
@@ -28,6 +34,9 @@ export default {
   methods: {
     input(event) {
       this.$emit('input', event);
+    },
+    keyup(event) {
+      this.$emit('keyup', event);
     },
   },
 };
