@@ -144,9 +144,10 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   // see if there are credentials in the session store that we don't know of
   let recovered = false;
-  if (sessionStorage.getItem('token') && !store.state.authenticated){
-    HTTP.defaults.headers.common['Authorization'] = 'Token ' + sessionStorage.getItem('token');
-    store.commit('login', sessionStorage.getItem('token'));
+  if (sessionStorage.getItem('token') && !store.state.authenticated) {
+    const token = JSON.parse(sessionStorage.getItem('token'))
+    HTTP.defaults.headers.common['Authorization'] = 'Token ' + token.token;
+    store.commit('login', token);
     recovered = true
   }
 
