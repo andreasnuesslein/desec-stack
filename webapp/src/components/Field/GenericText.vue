@@ -1,10 +1,13 @@
 <template>
   <v-text-field
     :label="label"
-    :disabled="readonly"
+    :disabled="disabled || readonly"
+    :error-messages="errorMessages"
     :value="value"
     :type="type || ''"
-    placeholder="(optional)"
+    :placeholder="required ? '' : '(optional)'"
+    :required="required"
+    :rules="[v => !required || !!v || 'Required.']"
     @input="input($event)"
     @keyup="keyup($event)"
   />
@@ -14,6 +17,14 @@
 export default {
   name: 'GenericText',
   props: {
+    disabled: {
+      type: Boolean,
+      required: false,
+    },
+    errorMessages: {
+      type: [String, Array],
+      default: () => [],
+    },
     label: {
       type: String,
       required: false,
@@ -21,6 +32,10 @@ export default {
     readonly: {
       type: Boolean,
       required: false,
+    },
+    required: {
+      type: Boolean,
+      default: false,
     },
     value: {
       type: [String, Number],

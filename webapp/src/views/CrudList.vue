@@ -66,7 +66,7 @@
               @keydown.esc="close"
             >
               <v-card>
-                <v-form @submit.prevent="save()">
+                <v-form v-model="valid" @submit.prevent="save()">
                   <v-card-title>
                     <span class="headline">{{ headlines.create }}</span>
                     <v-spacer />
@@ -100,7 +100,10 @@
                       v-bind="c.fieldProps ? c.fieldProps(createDialogItem) : {}"
                       :label="c.textCreate || c.text"
                       :error-messages="c.createErrors"
+                      :required="c.required || false"
+                      :disabled="!available"
                       autofocus
+                      @input="clearErrors(c)"
                     />
                   </v-card-text>
 
@@ -120,6 +123,7 @@
                       color="primary"
                       class="grow"
                       depressed
+                      :disabled="!available || !valid || createDialogWorking"
                       :loading="createDialogWorking"
                     >
                       Save
@@ -334,6 +338,7 @@ export default {
     snackbarInfoText: '',
     search: '',
     rows: [],
+    valid: false,
     /* to be overwritten */
     // features
     createable: true,
@@ -346,7 +351,7 @@ export default {
       destroy: 'Delete Object',
     },
     texts: {
-      banner: () => (false),
+      banner: undefined,
       create: () => ('Create a new object.'),
       destroy: () => ('Delete an object permanently. This operation can likely not be undone.'),
       destroyInfo: () => (false),
@@ -382,6 +387,7 @@ export default {
     },
   }},
   computed: {
+    available: () => true,
     headers() {
       const cols = Object.values(Object.assign({}, this.columns)); // (shallowly) copy cols and convert to array
       cols.push({
@@ -421,6 +427,9 @@ export default {
     store.commit('working', false);
   },
   methods: {
+    clearErrors(c) {
+      c.createErrors = [];
+    },
     /** *
      * Ask the user to delete the given item.
      * @param item
@@ -506,7 +515,6 @@ export default {
           this.close();
         } catch (e) {
           this.error(e);
-          this.postcreate(e);
         }
       }
       this.createDialogWorking = false;
