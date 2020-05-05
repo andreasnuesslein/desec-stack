@@ -295,6 +295,12 @@
               </v-form>
             </v-card>
           </v-dialog>
+          <component
+                  :is="extraComponentName"
+                  v-if="true || extraComponentName"
+                  v-bind="extraComponentBind"
+                  @input="() => { this.extraComponentName = ''; }"
+          ></component>
         </v-card>
       </v-col>
     </v-row>
@@ -334,6 +340,8 @@ export default {
     destroyDialogIndex: null,
     destroyDialogError: false,
     errors: [],
+    extraComponentName: '',
+    extraComponentBind: {},
     snackbar: false,
     snackbarInfoText: '',
     search: '',

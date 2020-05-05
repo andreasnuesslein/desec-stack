@@ -105,7 +105,10 @@ export default {
       type: Array,
       required: true,
     },
-    value: Boolean,
+    value: {
+      type: Boolean,
+      default: true,
+    },
   },
   data: () => ({
     copied: false,

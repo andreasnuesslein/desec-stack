@@ -2,10 +2,14 @@
 import { HTTP } from '@/utils';
 import CrudList from './CrudList';
 import store from "../store"
+import DomainDetailsDialog from '@/views/Console/DomainDetailsDialog';
 
 export default {
   name: 'CrudDomainList',
   extends: CrudList,
+  components: {
+    DomainDetailsDialog,
+  },
   data() {
     const self = this;
     return {
@@ -59,7 +63,10 @@ export default {
           delete: 'domains/:{name}/',
         },
         defaultObject: { name: '' },
-        postcreate: d => (alert(`postcreate ${d.name}`)),
+        postcreate(d) {
+          this.extraComponentBind = {'name': d.name, 'ds': d.keys.map(key => key.ds)};
+          this.extraComponentName = 'DomainDetailsDialog';
+        },
         // rowclick(domain) { this.$router.push({ name: 'CrudDomain', params: { name: domain.name } }); },
     }
   },
