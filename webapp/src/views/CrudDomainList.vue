@@ -53,7 +53,7 @@ export default {
         actions: [
           {
             key: 'info',
-            go: d => (alert(d.name)),
+            go: d => this.postcreate(d),
             icon: 'mdi-information',
           },
         ],
@@ -63,7 +63,19 @@ export default {
           delete: 'domains/:{name}/',
         },
         defaultObject: { name: '' },
-        postcreate(d) {
+        postcreate: d => this.showDomainInfo(d),
+        async showDomainInfo(d) {
+          if (d.keys === undefined) {
+            const url = this.resourcePath(this.paths.delete, d, ':');
+            try {
+              store.commit('working');
+              d.keys = (await HTTP.get(url)).data.keys;
+            } catch (e) {
+              this.error(e);
+            } finally {
+              store.commit('working', false);
+            }
+          }
           this.extraComponentBind = {'name': d.name, 'ds': d.keys.map(key => key.ds)};
           this.extraComponentName = 'DomainDetailsDialog';
         },
