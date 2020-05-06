@@ -23,47 +23,55 @@
         Your domain <b>{{ name }}</b> has been successfully created!
       </v-alert>
       <v-card-text>
-        <p>Please forward the following information to your domain registrar:</p>
-        <div class="caption font-weight-medium">
-          NS records
-        </div>
-        <pre class="mb-3 pa-3">
-ns1.desec.io
-ns2.desec.io
-</pre>
-        <v-layout
-          flex
-          align-end
-        >
-          <div class="caption font-weight-medium">
-            DS records
-          </div>
-          <v-spacer />
-          <div v-if="!copied">
+        <p>
+          To properly secure your domain with DNSSEC, please forward the following information to your domain registrar:
+        </p>
+        <v-layout flex align-end>
+          <div class="caption font-weight-medium">NS records</div>
+          <v-spacer></v-spacer>
+          <div v-if="copied != 'ns'">
             <v-icon
-              v-clipboard:copy="ds.join('\n')"
-              v-clipboard:success="() => (copied = true)"
-              v-clipboard:error="() => (copied = false)"
-              small
-              @click="true"
-            >
-              mdi-content_copy
-            </v-icon>
+                    small
+                    v-clipboard:copy="ns.join('\n')"
+                    v-clipboard:success="() => (copied = 'ns')"
+                    v-clipboard:error="() => (copied = '')"
+            >mdi-content-copy</v-icon>
           </div>
-          <div v-else>
-            copied! <v-icon small>
-              mdi-check
-            </v-icon>
-          </div>
+          <div v-else>copied! <v-icon small>mdi-check</v-icon></div>
         </v-layout>
         <pre
-          v-clipboard:copy="ds.join('\n')"
-          v-clipboard:success="() => (copied = true)"
-          v-clipboard:error="() => (copied = false)"
-          class="mb-3 pa-3"
-        >
-{{ ds.join('\n') }}
-</pre>
+                class="mb-3 pa-3"
+                v-clipboard:copy="ns.join('\n')"
+                v-clipboard:success="() => (copied = 'ns')"
+                v-clipboard:error="() => (copied = '')"
+        >{{ ns.join('\n') }}</pre>
+
+        <div v-if="ds.length > 0">
+          <v-layout flex align-end>
+            <div class="caption font-weight-medium">DS records</div>
+            <v-spacer></v-spacer>
+            <div v-if="copied != 'ds'">
+              <v-icon
+                      small
+                      v-clipboard:copy="ds.join('\n')"
+                      v-clipboard:success="() => (copied = 'ds')"
+                      v-clipboard:error="() => (copied = '')"
+              >mdi-content-copy</v-icon>
+            </div>
+            <div v-else>copied! <v-icon small>mdi-check</v-icon></div>
+          </v-layout>
+          <pre
+                  class="mb-3 pa-3"
+                  v-clipboard:copy="ds.join('\n')"
+                  v-clipboard:success="() => (copied = 'ds')"
+                  v-clipboard:error="() => (copied = '')"
+          >{{ ds.join('\n') }}</pre>
+        </div>
+        <div v-else>
+          <div class="caption font-weight-medium">DS records</div>
+          <p>(unavailable, please contact support)</p>
+        </div>
+
         <p>Once your domain registrar processes this information, your deSEC DNS setup will be ready to use.</p>
       </v-card-text>
       <v-card-actions class="pa-3">
@@ -105,18 +113,22 @@ export default {
       type: Array,
       required: true,
     },
+    ns: {
+      type: Array,
+      default: () => ['ns1.desec.io', 'ns2.desec.org'],
+    },
     value: {
       type: Boolean,
       default: true,
     },
   },
   data: () => ({
-    copied: false,
+    copied: '',
   }),
   methods: {
     close() {
       this.$emit('input', false);
-      this.copied = false;
+      this.copied = '';
     },
   },
 };

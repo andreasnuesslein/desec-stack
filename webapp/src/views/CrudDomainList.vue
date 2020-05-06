@@ -76,7 +76,9 @@ export default {
               store.commit('working', false);
             }
           }
-          this.extraComponentBind = {'name': d.name, 'ds': d.keys.map(key => key.ds)};
+          let ds = d.keys.map(key => key.ds);
+          ds = ds.concat.apply([], ds)
+          this.extraComponentBind = {'name': d.name, 'ds': ds};
           this.extraComponentName = 'DomainDetailsDialog';
         },
         // rowclick(domain) { this.$router.push({ name: 'CrudDomain', params: { name: domain.name } }); },
