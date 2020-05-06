@@ -21,5 +21,16 @@ export function logout() {
   sessionStorage.removeItem('token');
 }
 
+export async function withWorking(errorHandler, action) {
+  store.commit('working');
+  try {
+    return await action();
+  } catch (e) {
+    errorHandler(e);
+  } finally {
+    store.commit('working', false);
+  }
+}
+
 TimeAgo.locale(en);
 export const timeAgo = new TimeAgo();

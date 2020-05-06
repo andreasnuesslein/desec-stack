@@ -1,7 +1,6 @@
 <script>
-import { HTTP } from '@/utils';
+import { HTTP, withWorking } from '@/utils';
 import CrudList from './CrudList';
-import store from "../store"
 import DomainDetailsDialog from '@/views/Console/DomainDetailsDialog';
 
 export default {
@@ -67,14 +66,10 @@ export default {
         async showDomainInfo(d) {
           if (d.keys === undefined) {
             const url = this.resourcePath(this.paths.delete, d, ':');
-            try {
-              store.commit('working');
-              d.keys = (await HTTP.get(url)).data.keys;
-            } catch (e) {
-              this.error(e);
-            } finally {
-              store.commit('working', false);
-            }
+            await withWorking(this.error, () => HTTP
+                .get(url)
+                .then(r => d.keys = r.data.keys)
+            );
           }
           let ds = d.keys.map(key => key.ds);
           ds = ds.concat.apply([], ds)
@@ -93,14 +88,11 @@ export default {
     }
   },
   async mounted() {
-    try {
-      store.commit('working');
-      this.limit_domains = (await HTTP.get('auth/account/')).data.limit_domains;
-    } catch (e) {
-      this.error(e);
-    } finally {
-      store.commit('working', false);
-    }
+    const self = this;
+    await withWorking(this.error, () => HTTP
+        .get('auth/account/')
+        .then(r => self.limit_domains = r.data.limit_domains)
+    );
   },
 };
 </script>

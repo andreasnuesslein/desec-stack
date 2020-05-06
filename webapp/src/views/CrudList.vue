@@ -308,13 +308,12 @@
 </template>
 
 <script>
-import { HTTP } from '@/utils';
+import { HTTP, withWorking } from '@/utils';
 import RRSetType from '@/components/Field/RRSetType';
 import TimeAgo from '@/components/Field/TimeAgo';
 import Code from '@/components/Field/Code';
 import GenericText from '@/components/Field/GenericText';
 import RRSet from '@/components/Field/RRSet';
-import store from '../store';
 
 // safely access deeply nested objects
 const safeget = (path, object) => path.reduce((xs, x) => ((xs && xs[x]) ? xs[x] : null), object);
@@ -377,14 +376,7 @@ export default {
     // object
     defaultObject: {},
     // callbacks
-    preload: () => (undefined),
-    postload: () => (undefined),
-    precreate: () => (undefined),
     postcreate: () => (undefined),
-    preupdate: () => (undefined),
-    postupdate: () => (undefined),
-    predelete: () => (undefined),
-    postdelete: () => (undefined),
     rowclick: () => (undefined),
     keyupHandler: (e) => {
       // Intercept Enter key
@@ -422,17 +414,12 @@ export default {
     },
   },
   async mounted() {
+    const self = this;
     this.createDialogItem = Object.assign({}, this.defaultObject);
-    try {
-      store.commit('working');
-      this.preload();
-      this.rows = (await HTTP.get(this.resourcePath(this.paths.list, this.$route.params, '::'))).data;
-      this.postload();
-    } catch (e) {
-      this.error(e);
-      this.postload(e);
-    }
-    store.commit('working', false);
+    await withWorking(this.error, () => HTTP
+            .get(self.resourcePath(self.paths.list, self.$route.params, '::'))
+            .then(r => self.rows = r.data)
+    );
   },
   methods: {
     clearErrors(c) {
@@ -456,26 +443,19 @@ export default {
     async destroy(item) {
       this.destroyDialogWorking = true;
       this.destroyDialogError = null;
-      try {
-        const url = this.resourcePath(
-          this.resourcePath(this.paths.delete, this.$route.params, '::'),
-          item, ':',
-        );
-        this.predelete();
-        await HTTP.delete(url);
-        this.rows.splice(this.rows.indexOf(item), 1);
-        this.postdelete();
-        this.destroyClose();
-      } catch (e) {
-        this.error(e);
-        this.postdelete(e);
-      }
+      const url = this.resourcePath(
+              this.resourcePath(this.paths.delete, this.$route.params, '::'),
+              item, ':',
+      );
+      await withWorking(this.error, () => HTTP.delete(url));
+      this.rows.splice(this.rows.indexOf(item), 1);
+      this.destroyClose();
       this.destroyDialogWorking = false;
     },
     /** *
      * Closes the destroy dialog and cleans up.
      */
-    async destroyClose() {
+    destroyClose() {
       this.destroyDialogIndex = null;
       this.destroyDialogItem = {};
       this.destroyDialog = false;
@@ -490,39 +470,32 @@ export default {
       for (const c in this.columns) {
         this.columns[c].createErrors = [];
       }
+      const self = this;
       if (item) {
         // edit item
-        store.commit('working');
-        try {
-          this.preupdate();
-          const url = this.resourcePath(
-                  this.resourcePath(this.paths.update, this.$route.params, '::'),
-                  item,
-                  ':',
-          );
-          this.rows[this.rows.indexOf(item)] = (await HTTP.patch(url, item)).data;
-          this.postupdate(item);
-        } catch (e) {
-          this.error(e);
-          this.postupdate(e);
-        }
-        store.commit('working', false);
+        const url = this.resourcePath(
+                this.resourcePath(this.paths.update, this.$route.params, '::'),
+                item,
+                ':',
+        );
+        await withWorking(this.error, () => HTTP
+                .patch(url, item)
+                .then(r => self.rows[self.rows.indexOf(item)] = r.data)
+        );
       } else {
         // new item
         this.createDialogWorking = true;
         this.createDialogError = false;
-        try {
-          this.precreate();
-          const url = this.resourcePath(
-            this.resourcePath(this.paths.create, this.$route.params, '::'),
-            this.createDialogItem,
-            ':',
-          );
-          this.rows.push((await HTTP.post(url, this.createDialogItem)).data);
-          this.postcreate(this.rows[this.rows.length - 1]);
+        const url = this.resourcePath(
+                this.resourcePath(this.paths.create, this.$route.params, '::'),
+                this.createDialogItem,
+                ':',
+        );
+        const r = await withWorking(this.error, () => HTTP.post(url, self.createDialogItem))
+        if (r) {
+          const l = this.rows.push(r.data);
+          this.postcreate(this.rows[l - 1]);
           this.close();
-        } catch (e) {
-          this.error(e);
         }
       }
       this.createDialogWorking = false;
