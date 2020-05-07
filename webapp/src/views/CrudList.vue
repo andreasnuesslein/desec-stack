@@ -12,10 +12,7 @@
             :timeout="0"
           >
             {{ errors[errors.length - 1] }}
-            <v-btn
-              dark
-              @click="snackbar = false"
-            >
+            <v-btn @click="snackbar = false">
               Close
             </v-btn>
           </v-snackbar>
@@ -51,7 +48,7 @@
             <v-btn
               id="create"
               color="primary"
-              dark
+              depressed
               class="mb-2"
               :disabled="$store.state.working"
             >
@@ -283,7 +280,6 @@
                   <v-btn
                     color="primary"
                     class="grow"
-                    dark
                     depressed
                     type="submit"
                     :loading="destroyDialogWorking"
