@@ -5,7 +5,7 @@ import DomainList from "../views/Console/DomainList/index";
 import {HTTP, logout} from "../utils";
 import Login from "../views/Login";
 import store from '../store';
-import CrudDomainList from "../views/CrudDomainList";
+import CrudDomainList from "../views/DomainList";
 import CrudDomain from "../views/Domain/CrudDomain";
 import Domain from "../views/Domain";
 import TokenList from "../views/TokenList";
@@ -115,13 +115,13 @@ const routes = [
 
   /* generic table implementation */
   {
-    path: '/domains-crud',
-    name: 'domains-crud',
+    path: '/domains',
+    name: 'domains',
     component: CrudDomainList,
     meta: {guest: false},
   },
   {
-    path: '/domain-crud/:name',
+    path: '/domains/:name',
     name: 'CrudDomain',
     component: CrudDomain,
     meta: {guest: false},

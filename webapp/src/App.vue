@@ -170,13 +170,9 @@ export default {
       },
     },
     tabmenu: {
-      'domains-homebrew': {
-        'name': 'domains-homebrew',
-        'text': 'Domain Management (homebrew)',
-      },
-      'domains-crud': {
-        'name': 'domains-crud',
-        'text': 'Domain Management (CRUD)',
+      'domains': {
+        'name': 'domains',
+        'text': 'Domain Management',
       },
       'tokens': {
         'name': 'tokens',
