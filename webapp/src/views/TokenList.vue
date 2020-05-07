@@ -73,13 +73,3 @@ export default {
   },
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-  tr:focus-within {
-    background-color: #CCCCCC !important;
-  }
-  tr:focus-within .mdi-content-save-edit {
-      color: forestgreen;
-  }
-</style>

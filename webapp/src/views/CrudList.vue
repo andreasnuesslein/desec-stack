@@ -190,7 +190,7 @@
                       color="grey"
                       class="hover-green"
                       icon
-                      @click.stop="save(props.item)"
+                      @click.stop="save(props.item, $event)"
                     >
                       <v-icon>mdi-content-save-edit</v-icon>
                     </v-btn>
@@ -382,6 +382,7 @@ export default {
       // Intercept Enter key
       if (e.keyCode === 13) {
         // Submit
+        document.activeElement.blur();
         e.target.closest('tr').querySelector('.mdi-content-save-edit').closest('button').click();
       }
     },
@@ -466,13 +467,18 @@ export default {
      * The item is given by this.dialogIndex and this.dialogItem.
      * Errors are handled by calling the error function.
      */
-    async save(item) {
+    async save(item, event) {
       for (const c in this.columns) {
         this.columns[c].createErrors = [];
       }
       const self = this;
       if (item) {
         // edit item
+        if (event) {
+          let tr = event.target.closest('tr');
+          tr.addEventListener("animationend", () => tr.classList.remove('successFade'), true);
+          tr.classList.add('successFade');
+        }
         const url = this.resourcePath(
                 this.resourcePath(this.paths.update, this.$route.params, '::'),
                 item,
@@ -583,5 +589,20 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
+  /* If this is on tr instead of td, it doesn't work for the first one */
+  >>> tr.successFade td {
+    animation: successFade 1s;
+  }
+  >>> tr.successFade:focus-within td {
+    animation: none;
+  }
+  @keyframes successFade {
+    from { background-color: forestgreen; }
+  }
+  >>> tr:focus-within .mdi-content-save-edit {
+    color: forestgreen;
+  }
+  >>> tr:focus-within :focus {
+    background-color: #FFFFFF;
+  }
 </style>
