@@ -73,31 +73,43 @@
         </div>
 
         <p>Once your domain registrar processes this information, your deSEC DNS setup will be ready to use.</p>
+
+        <div v-if="this.LOCAL_PUBLIC_SUFFIXES.some((suffix) => name.endsWith(`.${suffix}`))">
+          <v-divider class="pb-3"></v-divider>
+          <p>
+            The IP <span v-if="ips.length == 1">address</span><span v-else>addresses</span> associated with
+            this domain <span v-if="ips.length == 1">is:</span><span v-else>are:</span>
+          </p>
+          <ul class="mb-4">
+            <li v-for="ip in ips" :key="ip"><span class="fixed-width">{{ip}}</span></li>
+            <li v-if="!ips.length">(none)</li>
+          </ul>
+        </div>
+        <p>
+          The DNS information of this domain was last changed {{ published ? timeAgo.format(new Date(published)) : 'never' }}.
+        </p>
       </v-card-text>
       <v-card-actions class="pa-3">
         <v-spacer />
-        <v-btn
-          v-if="isNew"
-          color="primary"
-          outline
-          @click.native="$emit('createAnotherDomain')"
-        >
-          Create another domain
-        </v-btn>
+        <v-btn depressed :to="{name: 'donate'}">Donate</v-btn>
         <v-btn
           color="primary"
           dark
           depressed
           @click.native="close"
         >
-          {{ isNew ? 'Close and edit' : 'Close' }}
+          Close
         </v-btn>
+        <v-spacer />
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
+import { LOCAL_PUBLIC_SUFFIXES } from '@/env';
+import { timeAgo } from '@/utils';
+
 export default {
   name: 'DomainDetailsDialog',
   props: {
@@ -117,6 +129,14 @@ export default {
       type: Array,
       default: () => ['ns1.desec.io', 'ns2.desec.org'],
     },
+    ips: {
+      type: Array,
+      default: () => [],
+    },
+    published: {
+      type: String,
+      default: '(unknown)',
+    },
     value: {
       type: Boolean,
       default: true,
@@ -124,6 +144,8 @@ export default {
   },
   data: () => ({
     copied: '',
+    LOCAL_PUBLIC_SUFFIXES: LOCAL_PUBLIC_SUFFIXES,
+    timeAgo: timeAgo,
   }),
   methods: {
     close() {

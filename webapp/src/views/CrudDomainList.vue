@@ -1,4 +1,5 @@
 <script>
+import {LOCAL_PUBLIC_SUFFIXES} from '@/env';
 import { HTTP, withWorking } from '@/utils';
 import CrudList from './CrudList';
 import DomainDetailsDialog from '@/views/Console/DomainDetailsDialog';
@@ -52,7 +53,7 @@ export default {
         actions: [
           {
             key: 'info',
-            go: d => this.postcreate(d),
+            go: d => this.showDomainInfo(d),
             icon: 'mdi-information',
           },
         ],
@@ -62,18 +63,30 @@ export default {
           delete: 'domains/:{name}/',
         },
         defaultObject: { name: '' },
-        postcreate: d => this.showDomainInfo(d),
-        async showDomainInfo(d) {
+        postcreate: d => this.showDomainInfo(d, true),
+        async showDomainInfo(d, isNew = false) {
+          const url = this.resourcePath(this.paths.delete, d, ':');
           if (d.keys === undefined) {
-            const url = this.resourcePath(this.paths.delete, d, ':');
             await withWorking(this.error, () => HTTP
                 .get(url)
-                .then(r => d.keys = r.data.keys)
+                .then(r => {
+                  d.keys = r.data.keys;
+                  d.published = r.data.published;
+                })
             );
           }
           let ds = d.keys.map(key => key.ds);
           ds = ds.concat.apply([], ds)
-          this.extraComponentBind = {'name': d.name, 'ds': ds};
+          this.extraComponentBind = {'name': d.name, 'ds': ds, 'published': d.published, 'is-new': isNew};
+          if (LOCAL_PUBLIC_SUFFIXES.some((suffix) => d.name.endsWith(`.${suffix}`))) {
+            this.extraComponentBind['ips'] = [];
+            await withWorking(this.error, async (o) => {
+              let urlRRset = `${url}/rrsets/?subname=&type=`;
+              for (let type of ['A', 'AAAA']) {
+                await HTTP.get(`${urlRRset}${type}`).then(r => r.data.length && o['ips'].push(...r.data[0].records));
+              }
+            }, this.extraComponentBind);
+          }
           this.extraComponentName = 'DomainDetailsDialog';
         },
         // rowclick(domain) { this.$router.push({ name: 'CrudDomain', params: { name: domain.name } }); },

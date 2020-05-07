@@ -21,10 +21,10 @@ export function logout() {
   sessionStorage.removeItem('token');
 }
 
-export async function withWorking(errorHandler, action) {
+export async function withWorking(errorHandler, action, ...params) {
   store.commit('working');
   try {
-    return await action();
+    return await action(...params);
   } catch (e) {
     errorHandler(e);
   } finally {
