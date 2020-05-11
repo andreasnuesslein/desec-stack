@@ -30,6 +30,7 @@ export default {
         },
         columns: {
           name: {
+            name: 'item.name',
             text: 'Name',
             textCreate: 'Enter Domain Name',
             align: 'left',
@@ -42,6 +43,7 @@ export default {
             searchable: true,
           },
           published: {
+            name: 'item.published',
             text: 'Published',
             align: 'left',
             sortable: true,
@@ -110,8 +112,3 @@ export default {
   },
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-
-</style>

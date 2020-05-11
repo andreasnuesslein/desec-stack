@@ -24,6 +24,7 @@ export default {
         },
         columns: {
           id: {
+            name: 'item.id',
             text: 'ID',
             align: 'left',
             value: 'id',
@@ -32,6 +33,7 @@ export default {
             searchable: true,
           },
           name: {
+            name: 'item.name',
             text: 'Name',
             textCreate: 'Token name',
             align: 'left',
@@ -43,6 +45,7 @@ export default {
             searchable: true,
           },
           created: {
+            name: 'item.created',
             text: 'Created',
             align: 'left',
             sortable: true,
@@ -52,6 +55,7 @@ export default {
             searchable: false,
           },
           last_used: {
+            name: 'item.last_used',
             text: 'Last used',
             align: 'left',
             sortable: true,

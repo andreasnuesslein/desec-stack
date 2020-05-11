@@ -30,180 +30,178 @@
             </v-btn>
           </v-snackbar>
 
-          <!-- Headline & Toolbar, Including New Form -->
-          <v-toolbar
-            flat
-            color="white"
-          >
-            <v-toolbar-title>{{ headlines.table }}</v-toolbar-title>
-            <v-spacer />
-            <v-text-field
-              v-model="search"
-              append-icon="mdi-magnify"
-              label="Search"
-              single-line
-              hide-details
-            />
-            <v-spacer />
-            <v-btn
-              id="create"
-              color="primary"
-              depressed
-              class="mb-2"
-              :disabled="$store.state.working"
-            >
-              {{ headlines.create }}
-            </v-btn>
-            <v-dialog
-              v-if="createable"
-              v-model="createDialog"
-              activator="#create"
-              max-width="500px"
-              persistent
-              @keydown.esc="close"
-            >
-              <v-card>
-                <v-form v-model="valid" @submit.prevent="save()">
-                  <v-card-title>
-                    <span class="headline">{{ headlines.create }}</span>
-                    <v-spacer />
-                    <v-icon @click.stop="close">
-                      mdi-close
-                    </v-icon>
-                  </v-card-title>
-                  <v-divider />
-                  <v-progress-linear
-                    v-if="createDialogWorking"
-                    height="2"
-                    :indeterminate="true"
-                  />
-
-                  <v-alert
-                    :value="createDialogError"
-                    type="error"
-                  >
-                    {{ errors[errors.length - 1] }}
-                  </v-alert>
-
-                  <v-card-text v-if="createDialog">
-                    <!-- v-if required here to make autofocus below working for the 2nd+ times, cf stackoverflow.com/a/51476992 -->
-                    <p>{{ texts.create() }}</p>
-                    <!-- New Form -->
-                    <component
-                      :is="getDatatype(c.datatype, createDialogItem)"
-                      v-for="(c, id) in writeableColumns"
-                      :key="id"
-                      v-model="createDialogItem[c.value]"
-                      v-bind="c.fieldProps ? c.fieldProps(createDialogItem) : {}"
-                      :label="c.textCreate || c.text"
-                      :error-messages="c.createErrors"
-                      :required="c.required || false"
-                      :disabled="!available"
-                      autofocus
-                      @input="clearErrors(c)"
-                    />
-                  </v-card-text>
-
-                  <v-card-actions>
-                    <v-spacer />
-                    <v-btn
-                      color="primary"
-                      class="grow"
-                      outlined
-                      :disabled="createDialogWorking"
-                      @click.native="close"
-                    >
-                      Cancel
-                    </v-btn>
-                    <v-btn
-                      type="submit"
-                      color="primary"
-                      class="grow"
-                      depressed
-                      :disabled="!available || !valid || createDialogWorking"
-                      :loading="createDialogWorking"
-                    >
-                      Save
-                    </v-btn>
-                    <v-spacer />
-                  </v-card-actions>
-                </v-form>
-              </v-card>
-            </v-dialog>
-          </v-toolbar>
-
           <!-- The Actual Table -->
-          <v-banner class="primary lighten-4" icon="mdi-information" v-if="texts.banner">{{ texts.banner() }}</v-banner>
           <v-data-table
-            :headers="headers"
-            :items="rows"
-            :search="search"
-            :custom-filter="filterSearchableCols"
-            :loading="$store.state.working || createDialogWorking || destroyDialogWorking"
-            class="elevation-1"
+                  :headers="headers"
+                  :items="rows"
+                  :search="search"
+                  :custom-filter="filterSearchableCols"
+                  :loading="$store.state.working || createDialogWorking || destroyDialogWorking"
+                  class="elevation-1"
           >
-            <!-- row template -->
-            <template
-              slot="item"
-              slot-scope="props"
-            >
-              <tr @click="rowclick(props.item)">
-                <td
-                  v-for="(c, id) in columns"
-                  :key="id"
+            <template slot="top">
+              <!-- Headline & Toolbar, Including New Form -->
+              <v-toolbar flat>
+                <v-toolbar-title>{{ headlines.table }}</v-toolbar-title>
+                <v-spacer />
+                <v-text-field
+                        v-model="search"
+                        v-if="$vuetify.breakpoint.smAndUp"
+                        append-icon="mdi-magnify"
+                        label="Search"
+                        single-line
+                        hide-details
+                />
+                <v-spacer />
+                <v-btn
+                        id="create"
+                        color="primary"
+                        dark
+                        small
+                        fab
+                        :disabled="$store.state.working"
                 >
-                  <component
-                    :is="getDatatype(c.datatype, props.item)"
-                    :readonly="c.readonly || $store.state.working"
-                    v-model="props.item[c.value]"
-                    v-bind="c.fieldProps ? c.fieldProps(props.item) : {}"
-                    @keyup="keyupHandler"
+                  <v-icon>mdi-plus</v-icon>
+                </v-btn>
+                <template v-slot:extension v-if="$vuetify.breakpoint.xsOnly">
+                  <v-text-field
+                          v-model="search"
+                          append-icon="mdi-magnify"
+                          label="Search"
+                          single-line
+                          hide-details
                   />
-                  <!-- :clearable="rrset.records.length > 1"
-                       @update:value="$set(rrset.records, index, $event)" -->
-                  <!--<span v-if="c.datatype=='timeago'" :title="props.item[c.value]">{{ timeAgo.format(new Date(props.item[c.value])) }}</span>-->
-                  <!--<span v-else-if="c.datatype=='code'"><code>{{ props.item[c.value] }}</code></span>-->
-                  <!--<span v-else-if="c.datatype=='rrsettype'"><r-r-set-type :type="props.item[c.value]"></r-r-set-type></span>-->
-                  <!--<span v-else>{{ props.item[c.value] }}</span>-->
-                </td>
-                <td>
-                  <v-layout
-                    align-center
-                    justify-end
-                  >
-                    <v-btn
-                      v-for="action in actions"
-                      :disabled="$store.state.working"
-                      :key="action.key"
-                      color="grey"
-                      icon
-                      @click.stop="action.go(props.item)"
-                    >
-                      <v-icon>{{ action.icon }}</v-icon>
-                    </v-btn>
-                    <v-btn
-                      v-if="updatable"
-                      :disabled="$store.state.working"
-                      color="grey"
-                      class="hover-green"
-                      icon
-                      @click.stop="save(props.item, $event)"
-                    >
-                      <v-icon>mdi-content-save-edit</v-icon>
-                    </v-btn>
-                    <v-btn
-                      v-if="destroyable"
-                      :disabled="$store.state.working"
-                      color="grey"
-                      class="hover-red"
-                      icon
-                      @click.stop="destroyAsk(props.item)"
-                    >
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                  </v-layout>
-                </td>
-              </tr>
+                </template>
+                <v-dialog
+                        v-if="createable"
+                        v-model="createDialog"
+                        activator="#create"
+                        max-width="500px"
+                        persistent
+                        @keydown.esc="close"
+                >
+                  <v-card>
+                    <v-form v-model="valid" @submit.prevent="save()">
+                      <v-card-title>
+                        <span class="headline">{{ headlines.create }}</span>
+                        <v-spacer />
+                        <v-icon @click.stop="close">
+                          mdi-close
+                        </v-icon>
+                      </v-card-title>
+                      <v-divider />
+                      <v-progress-linear
+                              v-if="createDialogWorking"
+                              height="2"
+                              :indeterminate="true"
+                      />
+
+                      <v-alert
+                              :value="createDialogError"
+                              type="error"
+                      >
+                        {{ errors[errors.length - 1] }}
+                      </v-alert>
+
+                      <v-card-text v-if="createDialog">
+                        <!-- v-if required here to make autofocus below working for the 2nd+ times, cf stackoverflow.com/a/51476992 -->
+                        <p>{{ texts.create() }}</p>
+                        <!-- New Form -->
+                        <component
+                                :is="c.datatype"
+                                v-for="(c, id) in writeableColumns"
+                                :key="id"
+                                v-model="createDialogItem[c.value]"
+                                v-bind="c.fieldProps ? c.fieldProps(createDialogItem) : {}"
+                                :label="c.textCreate || c.text"
+                                :error-messages="c.createErrors"
+                                :required="c.required || false"
+                                :disabled="!available"
+                                autofocus
+                                @input="clearErrors(c)"
+                        />
+                      </v-card-text>
+
+                      <v-card-actions>
+                        <v-spacer />
+                        <v-btn
+                                color="primary"
+                                class="grow"
+                                outlined
+                                :disabled="createDialogWorking"
+                                @click.native="close"
+                        >
+                          Cancel
+                        </v-btn>
+                        <v-btn
+                                type="submit"
+                                color="primary"
+                                class="grow"
+                                depressed
+                                :disabled="!available || !valid || createDialogWorking"
+                                :loading="createDialogWorking"
+                        >
+                          Save
+                        </v-btn>
+                        <v-spacer />
+                      </v-card-actions>
+                    </v-form>
+                  </v-card>
+                </v-dialog>
+              </v-toolbar>
+              <v-alert text type="info" v-if="texts.banner">{{ texts.banner() }}</v-alert>
+            </template>
+
+            <!-- @click="rowclick(props.item)" -->
+            <template
+              v-for="(column, id) in columns"
+              v-slot:[column.name]="itemFieldProps"
+            >
+              <component
+                :is="column.datatype"
+                :key="id"
+                :readonly="column.readonly || $store.state.working"
+                v-model="itemFieldProps.item[column.value]"
+                v-bind="column.fieldProps ? column.fieldProps(itemFieldProps.item) : {}"
+                @keyup="keyupHandler"
+              />
+            </template>
+            <template v-slot:item.actions="itemFieldProps">
+              <v-layout
+                      align-center
+                      justify-end
+              >
+                <v-btn
+                        v-for="action in actions"
+                        :disabled="$store.state.working"
+                        :key="action.key"
+                        color="grey"
+                        icon
+                        @click.stop="action.go(itemFieldProps.item)"
+                >
+                  <v-icon>{{ action.icon }}</v-icon>
+                </v-btn>
+                <v-btn
+                        v-if="updatable"
+                        :disabled="$store.state.working"
+                        color="grey"
+                        class="hover-green"
+                        icon
+                        @click.stop="save(itemFieldProps.item, $event)"
+                >
+                  <v-icon>mdi-content-save-edit</v-icon>
+                </v-btn>
+                <v-btn
+                        v-if="destroyable"
+                        :disabled="$store.state.working"
+                        color="grey"
+                        class="hover-red"
+                        icon
+                        @click.stop="destroyAsk(itemFieldProps.item)"
+                >
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </v-layout>
             </template>
             <template slot="no-data">
               <div
@@ -391,6 +389,7 @@ export default {
         text: 'Actions',
         sortable: false,
         align: 'right',
+        value: 'actions',
       });
       return cols; // data table expects an array
     },
@@ -575,9 +574,6 @@ export default {
               search != null &&
               typeof value === 'string' &&
               value.toString().toLocaleLowerCase().indexOf(search.toLocaleLowerCase()) !== -1
-    },
-    getDatatype(datatype, item) {
-      return datatype instanceof Function ? datatype(item) : datatype;
     },
   },
 };
