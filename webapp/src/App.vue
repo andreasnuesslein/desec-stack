@@ -64,11 +64,10 @@
 
     <v-content>
       <v-progress-linear
-              :active="$store.state.working"
-              :indeterminate="$store.state.working"
-              absolute
-              top
-              color="red"
+              :active="$store.getters.working"
+              :indeterminate="$store.getters.working"
+              fixed
+              color="secondary"
               style="z-index: 3"
       ></v-progress-linear>
       <router-view/>

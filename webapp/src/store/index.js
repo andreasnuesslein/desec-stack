@@ -22,10 +22,8 @@ export default new Vuex.Store({
       state.work_count += working ? 1 : -1;
     },
   },
-  computed: {
-    working () {
-      return !!this.work_count
-    }
+  getters: {
+    working: state => !!state.work_count
   },
   actions: {
   },

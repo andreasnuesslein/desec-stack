@@ -24,7 +24,7 @@ export default {
         },
         texts: {
           banner: () => ('You can create and delete domains here. We will soon extend our GUI to offer DNS record management. In the meantime, please use the API to manage records.'),
-          create: () => `You have ${self.availableCount} of ${self.limit_domains} domains left.`,
+          create: () => `You have ${self.availableCount} of ${self.limit_domains} domains left.` + (!self.availableCount ? ' Please contact support to apply for a higher limit.' : ''),
           destroy: d => (`Delete domain ${d.name}?`),
           destroyInfo: () => 'This operation will cause the domain to disappear from the DNS. It will no longer be reachable from the Internet.',
         },
@@ -103,7 +103,7 @@ export default {
       return this.availableCount > 0;
     }
   },
-  async mounted() {
+  async created() {
     const self = this;
     await withWorking(this.error, () => HTTP
         .get('auth/account/')

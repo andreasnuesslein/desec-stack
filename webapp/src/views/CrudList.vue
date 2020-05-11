@@ -36,7 +36,7 @@
                   :items="rows"
                   :search="search"
                   :custom-filter="filterSearchableCols"
-                  :loading="$store.state.working || createDialogWorking || destroyDialogWorking"
+                  :loading="$store.getters.working || createDialogWorking || destroyDialogWorking"
                   class="elevation-1"
           >
             <template slot="top">
@@ -59,7 +59,8 @@
                         dark
                         small
                         fab
-                        :disabled="$store.state.working"
+                        depressed
+                        :disabled="$store.getters.working"
                 >
                   <v-icon>mdi-plus</v-icon>
                 </v-btn>
@@ -152,7 +153,6 @@
               <v-alert text type="info" v-if="texts.banner">{{ texts.banner() }}</v-alert>
             </template>
 
-            <!-- @click="rowclick(props.item)" -->
             <template
               v-for="(column, id) in columns"
               v-slot:[column.name]="itemFieldProps"
@@ -160,7 +160,7 @@
               <component
                 :is="column.datatype"
                 :key="id"
-                :readonly="column.readonly || $store.state.working"
+                :readonly="column.readonly || $store.getters.working"
                 v-model="itemFieldProps.item[column.value]"
                 v-bind="column.fieldProps ? column.fieldProps(itemFieldProps.item) : {}"
                 @keyup="keyupHandler"
@@ -173,7 +173,7 @@
               >
                 <v-btn
                         v-for="action in actions"
-                        :disabled="$store.state.working"
+                        :disabled="$store.getters.working"
                         :key="action.key"
                         color="grey"
                         icon
@@ -183,7 +183,7 @@
                 </v-btn>
                 <v-btn
                         v-if="updatable"
-                        :disabled="$store.state.working"
+                        :disabled="$store.getters.working"
                         color="grey"
                         class="hover-green"
                         icon
@@ -193,7 +193,7 @@
                 </v-btn>
                 <v-btn
                         v-if="destroyable"
-                        :disabled="$store.state.working"
+                        :disabled="$store.getters.working"
                         color="grey"
                         class="hover-red"
                         icon
@@ -204,20 +204,11 @@
               </v-layout>
             </template>
             <template slot="no-data">
-              <div
-                v-if="$store.state.working"
-                class="py-5 text-xs-center"
-              >
-                <p>fetching data ...</p>
-              </div>
-              <div
-                v-else
-                class="py-5 text-xs-center"
-              >
+              <div class="py-4 text-xs-center">
                 <h2 class="title">
                   Feels so empty here!
                 </h2>
-                <p>No data yet.</p>
+                <p>No entries yet.</p>
               </div>
             </template>
           </v-data-table>
@@ -371,7 +362,6 @@ export default {
     defaultObject: {},
     // callbacks
     postcreate: () => (undefined),
-    rowclick: () => (undefined),
     keyupHandler: (e) => {
       // Intercept Enter key
       if (e.keyCode === 13) {
@@ -409,13 +399,14 @@ export default {
       return filter(this.columns, c => c.readonly && !c.writeOnCreate);
     },
   },
-  async mounted() {
+  async created() {
     const self = this;
-    this.createDialogItem = Object.assign({}, this.defaultObject);
+    const url = self.resourcePath(self.paths.list, self.$route.params, '::');
     await withWorking(this.error, () => HTTP
-            .get(self.resourcePath(self.paths.list, self.$route.params, '::'))
+            .get(url)
             .then(r => self.rows = r.data)
     );
+    this.createDialogItem = Object.assign({}, this.defaultObject);
   },
   methods: {
     clearErrors(c) {
