@@ -107,7 +107,6 @@
 </template>
 
 <script>
-import { LOCAL_PUBLIC_SUFFIXES } from '@/env';
 import { timeAgo } from '@/utils';
 
 export default {
@@ -144,7 +143,7 @@ export default {
   },
   data: () => ({
     copied: '',
-    LOCAL_PUBLIC_SUFFIXES: LOCAL_PUBLIC_SUFFIXES,
+    LOCAL_PUBLIC_SUFFIXES: process.env.VUE_APP_LOCAL_PUBLIC_SUFFIXES.split(','),
     timeAgo: timeAgo,
   }),
   methods: {
