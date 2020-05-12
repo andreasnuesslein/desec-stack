@@ -63,6 +63,12 @@ const routes = [
     component: () => import(/* webpackChunkName: "signup" */ '../views/ResetPassword.vue')
   },
   {
+    path: '/delete-account/',
+    name: 'delete-account',
+    component: () => import(/* webpackChunkName: "signup" */ '../views/DeleteAccount.vue'),
+    meta: {guest: false},
+  },
+  {
     path: '/change-email/:email?',
     name: 'change-email',
     component: () => import(/* webpackChunkName: "signup" */ '../views/ChangeEmail.vue'),
